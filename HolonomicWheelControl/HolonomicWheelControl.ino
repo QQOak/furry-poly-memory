@@ -56,24 +56,42 @@ void setup() {
 
 void loop() {
 
-  // control the left and right motors with the forwards and backwards
+  // control the left and right motors with the forwards and backwards movement
   int pwm_x_value = pulseIn(X_PIN, HIGH);
   int adjusted_x_value = pwm_x_value - 1500;
-  int x_speed = map(abs(adjusted_x_value), 0, 500, 0, 255);
-
-  if (abs(adjusted_x_value) < deadzone) {
-     x_speed = 0;
+  int x_speed = 0;
+  
+  if ((abs(adjusted_x_value) > deadzone)) {
+    x_speed = map(abs(adjusted_x_value), 0, 500, 0, 255);
+  }
+  if (x_speed > 255) {
+    x_speed =0;
   }
 
   
+   
+  Serial.print(adjusted_x_value);
+  Serial.print(" : ");
+  Serial.print(pwm_x_value);
+  Serial.print(" : ");
+  Serial.print(x_speed);
+  
 
-  // Left and right
+
+
+
+  
+
+  // front and back motion with Left and right motors
   int pwm_y_value = pulseIn(Y_PIN, HIGH);
-  int adjusted_y_value = pwm_y_value - 1500;  
-  int y_speed = map(abs(adjusted_y_value), 0, 500, 0, 255);
-
-  if (abs(adjusted_y_value) < deadzone) {
-     y_speed = 0;
+  int adjusted_y_value = pwm_y_value - 1500;
+  int y_speed = 0;
+  
+  if ((abs(adjusted_y_value) > deadzone)) {
+    y_speed = map(abs(adjusted_y_value), 0, 500, 0, 255);
+  }
+  if (y_speed > 255) {
+    y_speed =0;
   }
 
   analogWrite(leftSpeed_PIN, x_speed);
