@@ -1,155 +1,119 @@
-//include "HolonomicWheel.h"
-
-//HolonomicWheel w1;
-//HolonomicWheel w2;
-//HolonomicWheel w3;
-//HolonomicWheel w4;
-
-byte X_PIN = A0;
-byte Y_PIN = A1;
+byte X_PIN = A1;
+byte Y_PIN = A0;
 int deadzone = 50;
 
+int frontSpeed = 0;
 byte frontSpeed_PIN = 11;
-byte frontDirLeft_PIN = 13;
-byte frontDirRight_PIN = 6;
+byte frontClockwise_PIN = 6;
+byte frontAnticlockwise_PIN = 13;
 
-byte leftSpeed_PIN = 9;
-byte leftDirForwards_PIN = 12;
-byte leftDirReverse_PIN = 10;
-
+int rightSpeed = 0;
 byte rightSpeed_PIN = 3;
-byte rightDirForwards_PIN = 2;
-byte rightDirReverse_PIN = 4;
+byte rightClockwise_PIN = 4;
+byte rightAnticlockwise_PIN = 2;
 
+int rearSpeed = 0;
 byte rearSpeed_PIN = 5;
-byte rearDirLeft_PIN = 7;
-byte rearDirRight_PIN = 8;
+byte rearClockwise_PIN = 7;
+byte rearAnticlockwise_PIN = 8;
+
+int leftSpeed = 0;
+byte leftSpeed_PIN = 9;
+byte leftClockwise_PIN = 12;
+byte leftAnticlockwise_PIN = 10;
 
 void setup() {
 
+  Serial.begin(115200);
+  
   pinMode(X_PIN, INPUT);
-  pinMode(Y_PIN, INPUT);
-
-  // Left
-  pinMode(leftSpeed_PIN, OUTPUT); // PWM
-  pinMode(leftDirForwards_PIN, OUTPUT); // Forwards
-  pinMode(leftDirReverse_PIN, OUTPUT); // Reverse
-
-  // Right
-  pinMode(rightSpeed_PIN, OUTPUT); // PWM
-  pinMode(rightDirForwards_PIN, OUTPUT); // Forwards
-  pinMode(rightDirReverse_PIN, OUTPUT); // Reverse
+  pinMode(Y_PIN, INPUT); 
 
   // Front
   pinMode(frontSpeed_PIN, OUTPUT); // PWM
-  pinMode(frontDirLeft_PIN, OUTPUT); // Left
-  pinMode(frontDirRight_PIN, OUTPUT); // Right
+  pinMode(frontClockwise_PIN, OUTPUT); // Left
+  pinMode(frontAnticlockwise_PIN, OUTPUT); // Right
+
+  // Right
+  pinMode(rightSpeed_PIN, OUTPUT); // PWM
+  pinMode(rightClockwise_PIN, OUTPUT); // Forwards
+  pinMode(rightAnticlockwise_PIN, OUTPUT); // Reverse
 
   // Back
   pinMode(rearSpeed_PIN, OUTPUT); // PWM
-  pinMode(rearDirLeft_PIN, OUTPUT); // Left
-  pinMode(rearDirRight_PIN, OUTPUT); // Right
-  
-  Serial.begin(115200);
+  pinMode(rearClockwise_PIN, OUTPUT); // Left
+  pinMode(rearAnticlockwise_PIN, OUTPUT); // Right
 
+  // Left
+  pinMode(leftSpeed_PIN, OUTPUT); // PWM
+  pinMode(leftClockwise_PIN, OUTPUT); // Forwards
+  pinMode(leftAnticlockwise_PIN, OUTPUT); // Reverse  
+  
 }
 
 void loop() {
 
-  // control the left and right motors with the forwards and backwards movement
+  // Sideways movement
   int pwm_x_value = pulseIn(X_PIN, HIGH);
   int adjusted_x_value = pwm_x_value - 1500;
   int x_speed = 0;
+  frontSpeed = 0;
+  rearSpeed = 0;
+
+  
   
   if ((abs(adjusted_x_value) > deadzone)) {
-    x_speed = map(abs(adjusted_x_value), 0, 500, 0, 255);
+
+    x_speed =  map(adjusted_x_value, 0, 500, 0, 255);
+    frontSpeed = x_speed;
+    rearSpeed = x_speed;
+
+    if((x_speed > 255) || (x_speed < -255)) {
+      frontSpeed = 0;
+      rearSpeed = 0;
+    }
+
   }
-  if (x_speed > 255) {
-    x_speed =0;
-  }
-
   
-   
-  Serial.print(adjusted_x_value);
-  Serial.print(" : ");
-  Serial.print(pwm_x_value);
-  Serial.print(" : ");
-  Serial.print(x_speed);
-  
-
-
+  setWheelSpeed(frontSpeed, frontSpeed_PIN, frontClockwise_PIN, frontAnticlockwise_PIN);
+  setWheelSpeed(0-rearSpeed, rearSpeed_PIN, rearClockwise_PIN, rearAnticlockwise_PIN);
 
 
   
-
-  // front and back motion with Left and right motors
   int pwm_y_value = pulseIn(Y_PIN, HIGH);
   int adjusted_y_value = pwm_y_value - 1500;
   int y_speed = 0;
-  
+  rightSpeed = 0;
+  leftSpeed = 0;
+   
   if ((abs(adjusted_y_value) > deadzone)) {
-    y_speed = map(abs(adjusted_y_value), 0, 500, 0, 255);
-  }
-  if (y_speed > 255) {
-    y_speed =0;
-  }
 
-  analogWrite(leftSpeed_PIN, x_speed);
-  analogWrite(rightSpeed_PIN, x_speed);
-  
-  analogWrite(frontSpeed_PIN, y_speed);
-  analogWrite(rearSpeed_PIN, y_speed);
+    y_speed =  map(adjusted_y_value, 0, 500, 0, 255);
+    rightSpeed = y_speed;
+    leftSpeed = y_speed;
 
+    if((y_speed > 255) || (y_speed < -255)) {
+      rightSpeed = 0;
+      leftSpeed = 0;
+    }
 
-
-
-
-  // Forwards and backwards
-  if (adjusted_x_value > (0+deadzone)) {
-    digitalWrite(leftDirForwards_PIN, LOW);
-    digitalWrite(leftDirReverse_PIN, HIGH);
-    digitalWrite(rightDirForwards_PIN, LOW);
-    digitalWrite(rightDirReverse_PIN, HIGH);
- 
-  } else if (adjusted_x_value < (0-deadzone)) {
-    digitalWrite(leftDirForwards_PIN, HIGH);
-    digitalWrite(leftDirReverse_PIN, LOW);
-    digitalWrite(rightDirForwards_PIN, HIGH);
-    digitalWrite(rightDirReverse_PIN, LOW);
-    
-  } else {
-    digitalWrite(leftDirForwards_PIN, LOW);
-    digitalWrite(leftDirReverse_PIN, LOW);
-    digitalWrite(rightDirForwards_PIN, LOW);
-    digitalWrite(rightDirReverse_PIN, LOW);
   }
 
-
-
-
-  // Left and right
-  if (adjusted_y_value > (0+deadzone)) {
-    digitalWrite(frontDirLeft_PIN, LOW);
-    digitalWrite(frontDirRight_PIN, HIGH);
-    digitalWrite(rearDirLeft_PIN, LOW);
-    digitalWrite(rearDirRight_PIN, HIGH);
- 
-  } else if (adjusted_y_value < (0-deadzone)) {
-    digitalWrite(frontDirLeft_PIN, HIGH);
-    digitalWrite(frontDirRight_PIN, LOW);
-    digitalWrite(rearDirLeft_PIN, HIGH);
-    digitalWrite(rearDirRight_PIN, LOW);
-    
-  } else {
-    digitalWrite(frontDirLeft_PIN, LOW);
-    digitalWrite(frontDirRight_PIN, LOW);
-    digitalWrite(rearDirLeft_PIN, LOW);
-    digitalWrite(rearDirRight_PIN, LOW);
-  }
+  setWheelSpeed(rightSpeed, rightSpeed_PIN, rightClockwise_PIN, rightAnticlockwise_PIN);
+  setWheelSpeed(0-leftSpeed, leftSpeed_PIN, leftClockwise_PIN, leftAnticlockwise_PIN);
 
 
 
   Serial.println();
 
 
+}
+
+void setWheelSpeed(int pwmSpeed, byte pwmPin, byte forwardsPin, byte reversePin) {
+  digitalWrite(forwardsPin, (pwmSpeed > 0));
+  digitalWrite(reversePin, (pwmSpeed < 0));
+  analogWrite(pwmPin, abs(pwmSpeed));
+
+  Serial.println(pwmSpeed);
+  
 }
