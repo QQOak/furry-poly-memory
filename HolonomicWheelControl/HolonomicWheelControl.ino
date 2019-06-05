@@ -1,6 +1,7 @@
 byte X_PIN = A1;
 byte Y_PIN = A0;
-int deadzone = 50;
+byte R_PIN = A2;
+int deadzone = 75;
 
 int frontSpeed = 0;
 byte frontSpeed_PIN = 11;
@@ -22,12 +23,16 @@ byte leftSpeed_PIN = 9;
 byte leftClockwise_PIN = 12;
 byte leftAnticlockwise_PIN = 10;
 
+
+
+
 void setup() {
 
   Serial.begin(115200);
   
   pinMode(X_PIN, INPUT);
   pinMode(Y_PIN, INPUT); 
+  pinMode(R_PIN, INPUT);
 
   // Front
   pinMode(frontSpeed_PIN, OUTPUT); // PWM
@@ -53,15 +58,18 @@ void setup() {
 
 void loop() {
 
-  // Sideways movement
   int pwm_x_value = pulseIn(X_PIN, HIGH);
+  int pwm_y_value = pulseIn(Y_PIN, HIGH);
+  int pwm_r_value = pulseIn(R_PIN, HIGH);
+
+
+  // Calculate Sideways movement
+  // ===========================
   int adjusted_x_value = pwm_x_value - 1500;
   int x_speed = 0;
   frontSpeed = 0;
   rearSpeed = 0;
 
-  
-  
   if ((abs(adjusted_x_value) > deadzone)) {
 
     x_speed =  map(adjusted_x_value, 0, 500, 0, 255);
@@ -75,12 +83,10 @@ void loop() {
 
   }
   
-  setWheelSpeed(frontSpeed, frontSpeed_PIN, frontClockwise_PIN, frontAnticlockwise_PIN);
-  setWheelSpeed(0-rearSpeed, rearSpeed_PIN, rearClockwise_PIN, rearAnticlockwise_PIN);
-
 
   
-  int pwm_y_value = pulseIn(Y_PIN, HIGH);
+  // Calculate Forwards and backwards
+  // ================================
   int adjusted_y_value = pwm_y_value - 1500;
   int y_speed = 0;
   rightSpeed = 0;
@@ -99,6 +105,37 @@ void loop() {
 
   }
 
+
+  // Adjust for rotation
+  // ===================
+  int adjusted_r_value = pwm_r_value - 1500;
+  int r_speed = 0;
+  
+  if ((abs(adjusted_r_value) > deadzone)) {
+    r_speed =  map(adjusted_r_value, 0, 500, 0, 255);
+    if((r_speed > 255) || (r_speed < -255)) {
+      r_speed = 0;
+    }
+  }
+
+  Serial.print("R: ");
+  Serial.print(r_speed);
+  Serial.print(": X: ");
+  Serial.print(x_speed);
+  Serial.print(": Y: ");
+  Serial.println(y_speed);
+ 
+  frontSpeed += r_speed;
+  rightSpeed -= r_speed;
+  rearSpeed -= r_speed;
+  leftSpeed += r_speed;
+
+  
+
+  // Perform the movement
+  // ====================
+  setWheelSpeed(frontSpeed, frontSpeed_PIN, frontClockwise_PIN, frontAnticlockwise_PIN);
+  setWheelSpeed(0-rearSpeed, rearSpeed_PIN, rearClockwise_PIN, rearAnticlockwise_PIN);
   setWheelSpeed(rightSpeed, rightSpeed_PIN, rightClockwise_PIN, rightAnticlockwise_PIN);
   setWheelSpeed(0-leftSpeed, leftSpeed_PIN, leftClockwise_PIN, leftAnticlockwise_PIN);
 
@@ -112,8 +149,5 @@ void loop() {
 void setWheelSpeed(int pwmSpeed, byte pwmPin, byte forwardsPin, byte reversePin) {
   digitalWrite(forwardsPin, (pwmSpeed > 0));
   digitalWrite(reversePin, (pwmSpeed < 0));
-  analogWrite(pwmPin, abs(pwmSpeed));
-
-  Serial.println(pwmSpeed);
-  
+  analogWrite(pwmPin, abs(pwmSpeed));  
 }
