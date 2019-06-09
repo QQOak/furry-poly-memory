@@ -3,14 +3,8 @@
 
 class MovementController
 {
-
   public:
-      virtual int getX();
-      virtual int getY();
-      virtual int getR();
-
   private:
-    
 };
 
 #endif
