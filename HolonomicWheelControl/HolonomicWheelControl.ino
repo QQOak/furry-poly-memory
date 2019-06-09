@@ -1,3 +1,8 @@
+#include "MovementController.h"
+
+MovementController mv;
+
+
 byte X_PIN = A1;
 byte Y_PIN = A0;
 byte R_PIN = A2;
