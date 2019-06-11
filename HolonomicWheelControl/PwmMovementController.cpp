@@ -8,13 +8,15 @@ PwmMovementController::PwmMovementController(byte xPin, byte yPin, byte rPin, in
   pinMode(R_PIN, INPUT);
 }
 
+
 Movement PwmMovementController::GetMovement()
 {
+
+  Serial.println("Got from PWM movement controller");
+  
   int pwm_x_value = pulseIn(X_PIN, HIGH);
   int pwm_y_value = pulseIn(Y_PIN, HIGH);
   int pwm_r_value = pulseIn(R_PIN, HIGH);
-
-
 
   // x
   int x_speed = 0;
@@ -38,11 +40,9 @@ Movement PwmMovementController::GetMovement()
     }
   }
 
-
   // r
   int r_speed = 0;
   int adjusted_r_value = pwm_r_value - 1500;
-  
   
   if ((abs(adjusted_r_value) > DEADZONE)) {
     r_speed =  map(adjusted_r_value, 0, 500, 0, 255);

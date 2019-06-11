@@ -1,15 +1,17 @@
+#include "MovementController.h"
 #include "PwmMovementController.h"
 
-
-
-
+// Get the remote controller
+// reference, polymorphism, and all the nice stuff
 byte X_PIN = A1;
 byte Y_PIN = A0;
 byte R_PIN = A2;
-int deadzone = 75;
+int DEADZONE = 75;
+PwmMovementController PwmMc(X_PIN, Y_PIN, R_PIN, DEADZONE);
+MovementController& mc = PwmMc;
+  
 
-PwmMovementController mc(X_PIN, Y_PIN, R_PIN, deadzone);
-
+// Wheels
 byte frontSpeed_PIN = 11;
 byte frontClockwise_PIN = 6;
 byte frontAnticlockwise_PIN = 13;
@@ -27,67 +29,52 @@ byte leftClockwise_PIN = 12;
 byte leftAnticlockwise_PIN = 10;
 
 
-
-
 void setup() {
 
-  Serial.begin(115200);
-  
-
-
-  // Front
+  // Front Wheel
   pinMode(frontSpeed_PIN, OUTPUT); // PWM
   pinMode(frontClockwise_PIN, OUTPUT); // Left
   pinMode(frontAnticlockwise_PIN, OUTPUT); // Right
 
-  // Right
+  // Right Wheel
   pinMode(rightSpeed_PIN, OUTPUT); // PWM
   pinMode(rightClockwise_PIN, OUTPUT); // Forwards
   pinMode(rightAnticlockwise_PIN, OUTPUT); // Reverse
 
-  // Back
+  // Back Wheel
   pinMode(rearSpeed_PIN, OUTPUT); // PWM
   pinMode(rearClockwise_PIN, OUTPUT); // Left
   pinMode(rearAnticlockwise_PIN, OUTPUT); // Right
 
-  // Left
+  // Left Wheel
   pinMode(leftSpeed_PIN, OUTPUT); // PWM
   pinMode(leftClockwise_PIN, OUTPUT); // Forwards
   pinMode(leftAnticlockwise_PIN, OUTPUT); // Reverse  
   
 }
 
+
 void loop() {
 
+  // X and Y movement
   Movement m = mc.GetMovement();
-
-  int pwm_r_value = m.r;
-
   int frontSpeed = m.x;
   int rearSpeed = m.x;
   int rightSpeed = m.y;
   int leftSpeed = m.y;
-  int rotationSpeed = m.r;
-
+  
   // Make rotational Adjustments
+  int rotationSpeed = m.r;
   frontSpeed += rotationSpeed;
   rightSpeed -= rotationSpeed;
   rearSpeed = 0-(rearSpeed - rotationSpeed);
   leftSpeed = 0-(leftSpeed + rotationSpeed);
 
-  
-
   // Perform the movement
-  // ====================
   setWheelSpeed(frontSpeed, frontSpeed_PIN, frontClockwise_PIN, frontAnticlockwise_PIN);
   setWheelSpeed(rearSpeed, rearSpeed_PIN, rearClockwise_PIN, rearAnticlockwise_PIN);
   setWheelSpeed(rightSpeed, rightSpeed_PIN, rightClockwise_PIN, rightAnticlockwise_PIN);
   setWheelSpeed(leftSpeed, leftSpeed_PIN, leftClockwise_PIN, leftAnticlockwise_PIN);
-
-
-
-  Serial.println();
-
 
 }
 
