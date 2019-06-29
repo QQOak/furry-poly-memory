@@ -31,6 +31,8 @@ byte leftAnticlockwise_PIN = 10;
 
 void setup() {
 
+  Serial.begin(9600);
+
   // Front Wheel
   pinMode(frontSpeed_PIN, OUTPUT); // PWM
   pinMode(frontClockwise_PIN, OUTPUT); // Left

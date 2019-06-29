@@ -51,5 +51,14 @@ Movement PwmMovementController::GetMovement()
     }
   }
 
+
+  Serial.print("x:");
+  Serial.print(pwm_x_value);
+  Serial.print("   y:");
+  Serial.print(pwm_y_value);
+  Serial.print("   r:");
+  Serial.print(pwm_r_value);
+  Serial.println();
+
   return Movement(x_speed, y_speed, r_speed);
 }
